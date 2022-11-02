@@ -14,7 +14,8 @@
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"ms-azuretools.vscode-azurefunctions",
-				"vscjava.vscode-java-pack"
+				"vscjava.vscode-java-pack",
+				"Azurite.azurite"
 			]
 		}
 	},

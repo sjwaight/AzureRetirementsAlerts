@@ -36,3 +36,4 @@ hs_err_pid*
 local.settings.json
 bin/
 obj/
+__azurite*
