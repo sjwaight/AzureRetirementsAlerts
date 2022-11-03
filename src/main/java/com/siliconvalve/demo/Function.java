@@ -15,6 +15,7 @@ import com.azure.communication.email.*;
 import com.apptasticsoftware.rssreader.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -76,16 +77,16 @@ public class Function {
 
     private List<Item> readUpdatesRssFeed(ExecutionContext context)
     { 
-        List<Item> articles = null;
         RssReader reader = new RssReader();
         try 
         {
-            articles = reader.read(System.getenv("UpdatesURL")).collect(Collectors.toList());
+            return reader.read(System.getenv("UpdatesURL")).collect(Collectors.toList());
         } catch (IOException e) {
             context.getLogger().info(e.getMessage());
             e.printStackTrace();
         }
-        return articles;
+
+        return new ArrayList<Item>(0);
     }
 
     // private boolean prepareAndSendAlertEmail()

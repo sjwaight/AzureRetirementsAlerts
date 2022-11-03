@@ -10,7 +10,7 @@ Sample local.settings.json
     "Values": {
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
         "FUNCTIONS_WORKER_RUNTIME": "java",
-        "UpdatesURL": "https://azure.microsoft.com/updates/feed/"
+        "UpdatesURL": "https://azurecomcdn.azureedge.net/en-us/updates/feed/?updateType=retirements"
     }
 }
 ```
