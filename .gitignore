@@ -37,3 +37,4 @@ local.settings.json
 bin/
 obj/
 __azurite*
+__blobstorage__
