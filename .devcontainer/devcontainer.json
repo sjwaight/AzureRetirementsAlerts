@@ -15,7 +15,8 @@
 			"extensions": [
 				"ms-azuretools.vscode-azurefunctions",
 				"vscjava.vscode-java-pack",
-				"Azurite.azurite"
+				"Azurite.azurite",
+				"ms-azuretools.vscode-azurestorage"
 			]
 		}
 	},

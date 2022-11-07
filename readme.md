@@ -10,7 +10,12 @@ Sample local.settings.json
     "Values": {
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
         "FUNCTIONS_WORKER_RUNTIME": "java",
-        "UpdatesURL": "https://azurecomcdn.azureedge.net/en-us/updates/feed/?updateType=retirements"
+        "UpdatesURL": "https://azurecomcdn.azureedge.net/en-us/updates/feed/?updateType=retirements",
+        "CommunicationURL": "https://{your_instance}.communication.azure.com/",
+        "CommunicationKey": "{your_acs_key}",
+        "AlertRecipient": "recipient@somesampleemaildomain.com",
+        "AlertSubjectLine": "Azure Service Retirement Announcements",
+        "AlertSenderEmail": "DoNotReply@{your_acs_approved_email_domain}.azurecomm.net"
     }
 }
 ```

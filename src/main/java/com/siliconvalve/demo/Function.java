@@ -10,6 +10,7 @@ import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
 import com.azure.communication.email.models.*;
+import com.azure.core.credential.AzureKeyCredential;
 import com.azure.communication.email.*;
 
 import com.apptasticsoftware.rssreader.*;
@@ -47,33 +48,34 @@ public class Function {
                 authLevel = AuthorizationLevel.ANONYMOUS)
                 HttpRequestMessage<Optional<String>> request,
             // @TableInput(
-            //     name="persons", 
-            //     partitionKey="{partitionKey}", 
+            //     name="announcmenttrack", 
+            //     partitionKey="lastreaditem", 
             //     tableName="%MyTableName%", 
-            //     connection="MyConnectionString") Person[] persons,
+            //     connection="AzureWebJobsStorage") Person[] persons,
             // @TableOutput(
-            //     name="person", 
+            //     name="announcmenttrack", 
             //     partitionKey="{partitionKey}", 
             //     rowKey = "{rowKey}", 
             //     tableName="%MyTableName%", 
-            //     connection="MyConnectionString") OutputBinding<Person> person,
+            //     connection="AzureWebJobsStorage") OutputBinding<Person> person,
             final ExecutionContext context)
              {
 
-        context.getLogger().info("Java HTTP trigger processed a request.");
-
-        StringBuilder headings = new StringBuilder("<h1>Retirement announcements</h1>");
+        String headings = "<html><body><h1>Azure Retirement announcements</h1>";
 
         List<Item> articles = readUpdatesRssFeed(context);
 
-        while(articles.iterator().hasNext())
+        for(Item post :articles)
         {
-            headings.append(articles.iterator().next().getTitle() + "<br/>");
+            headings = headings + "<p><strong>" + post.getTitle().get() + "</strong> - <a href=\"" + post.getLink().get() + "\">read more &gt;&gt;</a></p>";
         }
+
+        headings = headings + "</body></html>";
+
+        prepareAndSendAlertEmail(headings);
 
         return request.createResponseBuilder(HttpStatus.OK).body(headings).build();
     }
-
 
     private List<Item> readUpdatesRssFeed(ExecutionContext context)
     { 
@@ -83,12 +85,39 @@ public class Function {
             return reader.read(System.getenv("UpdatesURL")).collect(Collectors.toList());
         } catch (IOException e) {
             context.getLogger().info(e.getMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         return new ArrayList<Item>(0);
     }
 
-    // private boolean prepareAndSendAlertEmail()
-    // {}
+    private boolean prepareAndSendAlertEmail(String retirementHtmlSnippet)
+    {
+
+        // merge html snippet
+
+        // Azure Communication Serivce - Email Service Client
+        EmailClient emailClient = new EmailClientBuilder()
+            .endpoint(System.getenv("CommunicationURL"))
+            .credential(new AzureKeyCredential(System.getenv("CommunicationKey")))
+            .buildClient();
+
+        EmailAddress emailAddress = new EmailAddress(System.getenv("AlertRecipient"));
+
+        ArrayList<EmailAddress> addressList = new ArrayList<>();
+        addressList.add(emailAddress);
+        
+        EmailRecipients emailRecipients = new EmailRecipients(addressList);
+        
+        EmailContent content = new EmailContent(System.getenv("AlertSubjectLine"))
+            .setHtml(retirementHtmlSnippet);
+        
+        EmailMessage emailMessage = new EmailMessage(System.getenv("AlertSenderEmail"), content)
+            .setRecipients(emailRecipients);
+        
+        SendEmailResult response = emailClient.send(emailMessage);
+
+        return true;
+        
+    }
 }
