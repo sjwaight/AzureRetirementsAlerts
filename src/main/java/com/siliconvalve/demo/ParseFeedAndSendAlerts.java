@@ -1,13 +1,9 @@
 package com.siliconvalve.demo;
 
-import com.microsoft.azure.functions.ExecutionContext;
-import com.microsoft.azure.functions.HttpMethod;
-import com.microsoft.azure.functions.HttpRequestMessage;
-import com.microsoft.azure.functions.HttpResponseMessage;
-import com.microsoft.azure.functions.HttpStatus;
-import com.microsoft.azure.functions.annotation.AuthorizationLevel;
-import com.microsoft.azure.functions.annotation.FunctionName;
-import com.microsoft.azure.functions.annotation.HttpTrigger;
+import com.siliconvalve.models.TrackingEntity;
+
+import com.microsoft.azure.functions.*;
+import com.microsoft.azure.functions.annotation.*;
 
 import com.azure.communication.email.models.*;
 import com.azure.core.credential.AzureKeyCredential;
@@ -25,7 +21,7 @@ import java.util.stream.Stream;
 /**
  * Azure Functions with HTTP Trigger.
  */
-public class Function {
+public class ParseFeedAndSendAlerts {
 
 
     // @FunctionName("TimerTrigger")
@@ -36,30 +32,25 @@ public class Function {
 
 
     /**
-     * This function listens at endpoint "/api/HttpExample". Two ways to invoke it using "curl" command in bash:
-     * 1. curl -d "HTTP Body" {your host}/api/HttpExample
-     * 2. curl "{your host}/api/HttpExample?name=HTTP%20Query"
+     * This function listens at endpoint "/api/ParseFeedAndSendAlerts". Two ways to invoke it using "curl" command in bash:
+     * 1. curl -d "HTTP Body" {your host}/api/ParseFeedAndSendAlerts
+     * 2. curl "{your host}/api/ParseFeedAndSendAlerts?name=HTTP%20Query"
      */
-    @FunctionName("HttpExample")
+    @FunctionName("ParseFeedAndSendAlerts")
     public HttpResponseMessage run(
             @HttpTrigger(
                 name = "req",
                 methods = {HttpMethod.GET, HttpMethod.POST},
                 authLevel = AuthorizationLevel.ANONYMOUS)
                 HttpRequestMessage<Optional<String>> request,
-            // @TableInput(
-            //     name="announcmenttrack", 
-            //     partitionKey="lastreaditem", 
-            //     tableName="%MyTableName%", 
-            //     connection="AzureWebJobsStorage") Person[] persons,
-            // @TableOutput(
-            //     name="announcmenttrack", 
-            //     partitionKey="{partitionKey}", 
-            //     rowKey = "{rowKey}", 
-            //     tableName="%MyTableName%", 
-            //     connection="AzureWebJobsStorage") OutputBinding<Person> person,
+            @TableInput(
+                name="announcmenttrack", 
+                partitionKey="%TrackerEntityPartitionKey%",
+                rowKey="%TrackerEntityRowKey%", 
+                tableName="%TrackerTableName%", 
+                connection="AzureWebJobsStorage") TrackingEntity trackingEntity,
             final ExecutionContext context)
-             {
+    {
 
         String headings = "<html><body><h1>Azure Retirement announcements</h1>";
 
