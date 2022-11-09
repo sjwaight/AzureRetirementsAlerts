@@ -6,9 +6,9 @@ The Azure Function is written using Java 11.
 
 ## Debug locally
 
-You can debug or play with this solution either by cloning locally to your machine or via use of a Dev Container or GitHub Codespaces. THe Dev Containter or Codespaces options present an easier path as they have all the necessary dependencies pre-installed. If you wish to run locally you will need to have a Java 11 JDK installed, the [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local) and the [Azurite Azure Storage](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) emulator. 
+You can debug or play with this solution either by cloning locally to your machine or via use of a Dev Container or GitHub Codespaces. The Dev Containter or Codespaces options present an easier path as they have all the necessary dependencies pre-installed. If you wish to run locally you will need to have a Java 11 JDK installed, the [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local) and the [Azurite Azure Storage](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) emulator. There is no local substitute for the email service, but you can comment out that code if you wish, or provision a service by using the Bicep file mentioned below in "Setup in Azure".
 
-When you spin up you will need to create a local.settings.json file as per the defintion below.
+When you spin up locally or in a Dev Container or Codespace you will need to create a local.settings.json file as per the defintion below.
 
 ```json
 {
@@ -60,4 +60,4 @@ The Bicep file will deploy the following resources for you:
 - Azure Storage Account with defined containers
 - Azure Function App (v4 runtime, Java 11) with configured Application Settings.
 
-Once deployed you can wire up the GitHub Action for this repository so it deploys the Azure Functions code to your Subscrption.
+Once deployed you can wire up the GitHub Action for this repository so it deploys the Azure Functions code to your Subscription.
