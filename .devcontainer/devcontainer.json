@@ -16,7 +16,8 @@
 				"ms-azuretools.vscode-azurefunctions",
 				"vscjava.vscode-java-pack",
 				"Azurite.azurite",
-				"ms-azuretools.vscode-azurestorage"
+				"ms-azuretools.vscode-azurestorage",
+				"ms-azuretools.vscode-bicep"
 			]
 		}
 	},
