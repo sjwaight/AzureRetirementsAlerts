@@ -51,6 +51,9 @@ public class ParseFeedAndSendAlerts {
                 connection="AzureWebJobsStorage") TrackingEntity trackingEntity,
             final ExecutionContext context)
     {
+        // Note: would have loved to have used a Table Storage Output Binding but it turns out that the Binding can't be
+        //       used to update an existing Entity which is what I'd like to do here, so instead I am using the TableClient.
+
 
         String headings = "<html><body><h1>Azure Retirement announcements</h1>";
 
