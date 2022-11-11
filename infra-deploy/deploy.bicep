@@ -384,3 +384,9 @@ resource function_application_insights 'microsoft.insights/components@2020-02-02
     publicNetworkAccessForQuery: 'Enabled'
   }
 }
+
+/// OUTPUTS
+
+output deployed_location string = deployment_location
+output deployed_resource_group string = resourceGroup().name
+output function_app_name string = sites_depalertsfunc_name_resource.name
