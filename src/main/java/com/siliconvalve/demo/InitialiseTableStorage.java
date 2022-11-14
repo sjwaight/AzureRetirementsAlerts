@@ -50,7 +50,7 @@ public class InitialiseTableStorage {
             String partitionKey = System.getenv("TrackerEntityPartitionKey");
             String rowKey = System.getenv("TrackerEntityRowKey");
             Map<String, Object> lastDate = new HashMap<>();
-            lastDate.put(System.getenv("TrackerEntityDataField"),"2022-01-01");
+            lastDate.put(System.getenv("TrackerEntityDataField"),"Sat, 1 Jan 2022 00:00:00 Z");
             
             TableEntity entityItem = new TableEntity(partitionKey, rowKey).setProperties(lastDate);
             
