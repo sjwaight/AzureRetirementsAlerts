@@ -32,26 +32,13 @@ import java.time.Instant;
  */
 public class ParseFeedAndSendAlerts {
 
-
-    // @FunctionName("TimerTrigger")
-    // public void timerHandler(
-    //     @TimerTrigger(name = "timerInfo", schedule = "0 */5 * * * *") String timerInfo,
-    //     final ExecutionContext context
-    // ) {
-
-
     /**
-     * This function listens at endpoint "/api/ParseFeedAndSendAlerts". Two ways to invoke it using "curl" command in bash:
-     * 1. curl -d "HTTP Body" {your host}/api/ParseFeedAndSendAlerts
-     * 2. curl "{your host}/api/ParseFeedAndSendAlerts?name=HTTP%20Query"
+     * This function runs on a schedule determined by the cron defintion set for the 'schedule' argument
+     * You can manually invoke it by following this: https://learn.microsoft.com/azure/azure-functions/functions-manually-run-non-http 
      */
     @FunctionName("ParseFeedAndSendAlerts")
-    public HttpResponseMessage run(
-            @HttpTrigger(
-                name = "req",
-                methods = {HttpMethod.GET},
-                authLevel = AuthorizationLevel.ANONYMOUS)
-                HttpRequestMessage<Optional<String>> request,
+    public void run(
+            @TimerTrigger(name = "timerInfo", schedule = "0 0 * * 0") String timerInfo,
             @TableInput(
                 name="announcmenttrack", 
                 partitionKey="%TrackerEntityPartitionKey%",
@@ -60,28 +47,71 @@ public class ParseFeedAndSendAlerts {
                 connection="AzureWebJobsStorage") TrackingEntity[] trackingEntity,
             final ExecutionContext context)
     {
-        // Note: would have loved to have used a Table Storage Output Binding but it turns out that the Binding can't be
-        //       used to update an existing Entity which is what I'd like to do here, so instead I am using the TableClient.
-
         try 
         {
-            List<Item> articles = readUpdatesRssFeed(trackingEntity[0].getLastReadItemDateTime());
+            List<Item> articles = readUpdatesRssFeed(trackingEntity[0]);
+
+            context.getLogger().info("Sending " + articles.size() + " new retirement alerts as an email.");
 
             String emailBody = buildEmailBody(articles);
 
-            prepareAndSendAlertEmail(emailBody);
+            if(prepareAndSendAlertEmail(emailBody))
+            {
+                // if there are any new Items we need to update the list
+                if(articles.size() > 0 )
+                {
+                    // we are going to assume the list is in order of the incoming RSS XML
+                    // which should have the most recent article as the first time.
+                    Item mostRecentPost = articles.get(0);
+                    updateLastProcessedAlert(mostRecentPost);
 
-            // we are going to assume the list is in order of the incoming RSS XML
-            // which should have the most recent article as the first time.
-            String lastDateTime = articles.get(0).getPubDate().get();
-
-            updateLastProcessedAlert(lastDateTime);
+                    context.getLogger().info("Updated tracker table with most recent post: " + mostRecentPost.getGuid().get());
+                }
+                else
+                {
+                    context.getLogger().info("No need to update Table Storage as no new retirement announcements.");
+                }
+            }
+            else
+            {
+                context.getLogger().info("Didn't update Table Storage as Alerts email was not sent.");
+            }
 
         } catch (IOException e) {
             context.getLogger().info(e.getMessage());
         }
+    }
 
-        return request.createResponseBuilder(HttpStatus.OK).body("OK").build();
+    /**
+     * Reads the Azure Updates RSS feed and converts it into a local Java List.
+     * 
+     * @param lastProcessedItemEntity POJO containing the details of the update that was sent last time this Function ran
+     * @return List<Item> that has only new articles since last run (if any)
+     * @throws IOException if unable to read the source RSS feed
+     */
+    private List<Item> readUpdatesRssFeed(TrackingEntity lastProcessedItemEntity) throws IOException
+    { 
+        RssReader reader = new RssReader();
+
+        String lastArticleDate = lastProcessedItemEntity.getPubDate();
+        String lastArticleGuid = lastProcessedItemEntity.getGuid();
+
+        List<Item> sourceArticles = reader.read(System.getenv("UpdatesURL")).collect(Collectors.toList());
+        List<Item> newArticles = new ArrayList<Item>();
+
+        for(Item article: sourceArticles)
+        {
+            String newArticleDate = article.getPubDate().get();
+            String newArticleGuid = article.getGuid().get();
+
+            // Once we hit the last processed item we end loop.
+            if(newArticleDate.equals(lastArticleDate) && newArticleGuid.equals(lastArticleGuid))
+                break;
+
+            newArticles.add(article);
+        }
+
+        return newArticles; 
     }
 
     /**
@@ -104,34 +134,6 @@ public class ParseFeedAndSendAlerts {
         }
         headings = bodyItems + "</body></html>";
         return headings;
-    }
-
-    /**
-     * Reads the Azure Updates RSS feed and converts it into a local Java List.
-     * 
-     * @param lastProcessedPubDate string containing the date / time of the most recently published update
-     * @return List<Item> that has only new articles since last run (if any)
-     * @throws IOException if unable to read the source RSS feed
-     */
-    private List<Item> readUpdatesRssFeed(String lastProcessedPubDate) throws IOException
-    { 
-        RssReader reader = new RssReader();
-
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("E, MMM dd yyyy HH:mm:ss"); // Sat, 12 Nov 2022 00:00:22 Z
-
-        Instant lastProcessedArticle = Instant.parse(lastProcessedPubDate);
-
-        //LocalDateTime lastProcessedArticle = LocalDateTime.parse(lastProcessedPubDate,df);
-
-        List<Item> soureArticles = reader.read(System.getenv("UpdatesURL")).collect(Collectors.toList());
-
-        List<Item> newArticles = soureArticles.stream().filter(i -> {
-            String newArticleDate = i.getPubDate().get();
-            return (Instant.parse(newArticleDate).compareTo(lastProcessedArticle) <= 0);
-            // return LocalDateTime.parse(newArticleDate.substring(0,newArticleDate.length()-2), df).compareTo(lastProcessedArticle) <= 0;
-        }).collect(Collectors.toList());;
-
-        return newArticles; 
     }
 
     /**
@@ -175,9 +177,9 @@ public class ParseFeedAndSendAlerts {
     /**
      * Update the tracking Azure Storage Table Entity with the date of the most recent update.
      * 
-     * @param mostRecentDate String containing the date/time of the most recently use Azure Update item
+     * @param mostRecentPost RSS Item containing the most recently used Azure Update item
      */
-    private void updateLastProcessedAlert(String mostRecentDate)
+    private void updateLastProcessedAlert(Item mostRecentPost)
     {
         // Create a TableServiceClient with a connection string.
         TableServiceClient tableServiceClient = new TableServiceClientBuilder()
@@ -189,11 +191,12 @@ public class ParseFeedAndSendAlerts {
         // Create a new TableEntity.
         String partitionKey = System.getenv("TrackerEntityPartitionKey");
         String rowKey = System.getenv("TrackerEntityRowKey");
-        Map<String, Object> lastDate = new HashMap<>();
-        lastDate.put(System.getenv("TrackerEntityDataField"),mostRecentDate);
-            
-        TableEntity entityItem = new TableEntity(partitionKey, rowKey).setProperties(lastDate);
-            
+
+        TableEntity entityItem = new TableEntity(partitionKey, rowKey);
+        
+        entityItem.addProperty("PubDate",mostRecentPost.getPubDate().get());
+        entityItem.addProperty("Guid",mostRecentPost.getGuid().get());
+    
         // Upsert the entity into the table
         tableClient.upsertEntity(entityItem);
     }

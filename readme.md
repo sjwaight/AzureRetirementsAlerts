@@ -21,10 +21,15 @@ When you spin up locally or in a Dev Container or Codespace you will need to cre
         "CommunicationKey": "{your_acs_key}",
         "AlertRecipient": "recipient@somesampleemaildomain.com",
         "AlertSubjectLine": "Azure Service Retirement Announcements",
-        "AlertSenderEmail": "DoNotReply@{your_acs_approved_email_domain}.azurecomm.net"
+        "AlertSenderEmail": "DoNotReply@{your_acs_approved_email_domain}.azurecomm.net",
+        "TrackerTableName": "updatetracker01",
+        "TrackerEntityPartitionKey": "updates01",
+        "TrackerEntityRowKey": "LastReadItemDateTime"
     }
 }
 ```
+
+You can find a sample snippet of the RSS feed in the [rss-data-sample.xml file](rss-data-sample.xml) in this repo.
 
 ## Setup in Azure
 
