@@ -1,0 +1,20 @@
+<rss xmlns:a10="http://www.w3.org/2005/Atom" version="2.0">
+    <channel xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
+        <title>Azure service updates</title>
+        <link>https://azure.microsoft.com/en-us/updates/</link>
+        <description>Azure service updates</description>
+        <language>en-us</language>
+        <lastBuildDate>Mon, 14 Nov 2022 23:08:29 Z</lastBuildDate>
+        <atom:link href="https://azure.microsoft.com/updates/feed/" rel="self" type="application/rss+xml" />
+        <item>
+            <guid isPermaLink="false">arm-tls-12-migration</guid>
+            <link>https://azure.microsoft.com/en-us/updates/arm-tls-12-migration/</link>
+            <category>AzureResourceManager</category>
+            <title>Azure Resource Manager — Migrating to TLS 1.2 with Deprecation of Outdated Security Protocols</title>
+            <description>Azure Resource Manager will be deprecating support for TLS 1.1 and older in Fall 2023. To maintain an uninterrupted connection with Azure Resource Manager, update your operating systems and work environments to support TLS 1.2.</description>
+            <pubDate>Sat, 12 Nov 2022 00:00:22 Z</pubDate>
+            <atom:content type="text">Azure Resource Manager will be deprecating support for TLS 1.1 and older in Fall 2023. To maintain an uninterrupted connection with Azure Resource Manager, update your operating systems and work environments to support TLS 1.2.</atom:content>
+            <content:encoded />
+        </item>
+    </channel>
+</rss>

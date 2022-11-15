@@ -39,20 +39,22 @@ public class InitialiseTableStorage {
 
             // Create the table if it does not exist.
             TableClient tableClient = tableServiceClient.createTableIfNotExists(tableName);
+
+            String partitionKey = System.getenv("TrackerEntityPartitionKey");
+            String rowKey = System.getenv("TrackerEntityRowKey");
             
             // If the table already exists then the tableClient will be NULL
             if (tableClient == null)
             {
                 tableClient = tableServiceClient.getTableClient(tableName);
+                tableClient.deleteEntity(tableName, tableName);
             }
 
             // Create a new TableEntity.
-            String partitionKey = System.getenv("TrackerEntityPartitionKey");
-            String rowKey = System.getenv("TrackerEntityRowKey");
-            Map<String, Object> lastDate = new HashMap<>();
-            lastDate.put(System.getenv("TrackerEntityDataField"),"2022-01-01");
-            
-            TableEntity entityItem = new TableEntity(partitionKey, rowKey).setProperties(lastDate);
+            TableEntity entityItem = new TableEntity(partitionKey, rowKey);
+        
+            entityItem.addProperty("PubDate","Sat, 1 Jan 2022 00:00:00 Z");
+            entityItem.addProperty("Guid","random-text-no-matches");
             
             // Upsert the entity into the table
             tableClient.upsertEntity(entityItem);

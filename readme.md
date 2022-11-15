@@ -21,10 +21,15 @@ When you spin up locally or in a Dev Container or Codespace you will need to cre
         "CommunicationKey": "{your_acs_key}",
         "AlertRecipient": "recipient@somesampleemaildomain.com",
         "AlertSubjectLine": "Azure Service Retirement Announcements",
-        "AlertSenderEmail": "DoNotReply@{your_acs_approved_email_domain}.azurecomm.net"
+        "AlertSenderEmail": "DoNotReply@{your_acs_approved_email_domain}.azurecomm.net",
+        "TrackerTableName": "updatetracker01",
+        "TrackerEntityPartitionKey": "updates01",
+        "TrackerEntityRowKey": "LastReadItemDateTime"
     }
 }
 ```
+
+You can find a sample snippet of the RSS feed in the [rss-data-sample.xml file](rss-data-sample.xml) in this repo.
 
 ## Setup in Azure
 
@@ -48,9 +53,11 @@ $ az group create --location your_region --resource-group your_group_name
 $ az deployment group create --resource-group your_group_name --template-file infra-deploy/deploy.bicep
 ```
 
-You will be prompted for an email address to receive the alert emails at
+_Note:_ if you are doing this from within Codespaces, use the `az login --use-device-code` option to login.
 
-Depending on the Region, and time of day, the template will take around 5 minutes to deploy. You should receive no errors. If you do, please [open an issue](https://github.com/sjwaight/AzureRetirementsAlerts/issues) on the origianl repository so we can take a look - please make sure to include your error message.
+You will be prompted for an email address to receive the alert emails at. The current setup only supports a single recipient.
+
+Depending on the Azure Region, and time of day, the template will take around 5 minutes to deploy. You should receive no errors. If you do, please [open an issue](https://github.com/sjwaight/AzureRetirementsAlerts/issues) on the origianl repository so we can take a look - please make sure to include your error message.
 
 The Bicep file will deploy the following resources for you:
 
@@ -60,4 +67,30 @@ The Bicep file will deploy the following resources for you:
 - Azure Storage Account with defined containers
 - Azure Function App (v4 runtime, Java 11) with configured Application Settings.
 
-Once deployed you can wire up the GitHub Action for this repository so it deploys the Azure Functions code to your Subscription.
+The Bicep file will output 3 values. Record the Azure Function name for use in steps below.
+
+Once the infrastructure is deployed you can wire up the GitHub Action for this repository so it deploys the Azure Functions code to your Subscription.
+
+### Deploy Azure Function
+
+The easiest way to wire up the Action is to use the `az functionapp app up` [command](https://learn.microsoft.com/cli/azure/functionapp/app?view=azure-cli-latest#az-functionapp-app-up)).
+
+```bash
+$ az functionapp app up --app-name your_function_app_name --branch-name main --repository  https://github.com/your_user/AzureRetirementsAlerts.git 
+```
+
+If you are prompted to update or add a new GitHub Action defintion, select to add a new one.
+
+If for you are unable to deploy the application via this method you can use the [Deployment Center](https://learn.microsoft.com/azure/azure-functions/functions-continuous-deployment) option in the Azure Portal to configure your deployment.
+
+### Configure Table Storage
+
+Before you can successfully use the Azure Function solution you will need an entity in an Azure Storage Table. You can initialise this by performing the following steps.
+
+```bash
+$ FUNC_URL=$(az functionapp function show --resource-group your_resource_group --name your_function_app_name --function-name InitialiseTableStorage --function-name InitialiseTableStorage --query invokeUrlTemplate --output tsv)
+$ FUNC_KEY=$(az functionapp function keys list --resource-group your_resource_group --name your_function_app_name --function-name InitialiseTableStorage --query default --output tsv)
+$ curl "$FUNC_URL?code=$FUNC_KEY"
+```
+
+Once this is completed you will find a new Table in your Azure Storage Account that contains exactly one Entity.
