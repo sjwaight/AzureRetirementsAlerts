@@ -1,8 +1,12 @@
 # Use Azure Functions to Generate Azure Service Retirement Emails
 
-This solution is used to periodically generate and send an email that contains newly annouced Azure Service retirements. Blog to follow.
+This solution is used to periodically generate and send an email that contains newly annouced Azure Service retirements. 
+
+If you want more background to this solution you can [read the blog](https://blog.siliconvalve.com/2022/11/16/build-your-own-azure-retirements-email-alerts-service-using-java-azure-functions-and-communication-services/) that that. 
 
 The Azure Function is written using Java 11.
+
+If you continue to see "no retirements" emails and feel this is incorrect, then check your configuration. This solution is functional and running as expected in Azure. Thankfully there aren't too many retirement announcements!
 
 ## Debug locally
 
@@ -31,6 +35,19 @@ When you spin up locally or in a Dev Container or Codespace you will need to cre
 
 You can find a sample snippet of the RSS feed in the [rss-data-sample.xml file](rss-data-sample.xml) in this repo.
 
+Note: depending on your configuration you may need to add a couple of additional entries that point to JAVA_HOME and also set the debugger correctly. Add these two entries (and update accordingly to suit your machine).
+
+```
+"JAVA_HOME": "/usr",
+"JAVA_OPTS": "-Djava.net.preferIPv4Stack=true -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=127.0.0.1:5005"
+```
+
+On Ubuntu you can install all the necessaru Java bits by running this update:
+
+```bash
+sudo apt install openjdk-11-source
+```
+
 ## Setup in Azure
 
 Start by forking this repository on GitHub. Once forked, clone the repository to your local developer machine, or open in a GitHub Codespace.
@@ -42,8 +59,11 @@ $ cd AzureRetirementsAlerts
 
 Start by deploying the necessary Azure services by using the [Bicep file](infra-deploy/deploy.bicep) contained in the infra-deploy folder. You will need to use the Azure CLI and log into your Subscription first.
 
-You will need to select an Azure Region when deploying. You should supply the `Name` of the Region which can be obtained using this Azure CLI command:  
-`az account list-locations -o table`.
+You will need to select an Azure Region when deploying. You should supply the `Name` of the Region which can be obtained using this Azure CLI command:
+
+```
+az account list-locations -o table
+```
 
 It is also recommended to create a relatively short Resource Group name as this name is used as the seed for a random string suffix that is used for all created Resources. If you create a long Resource Group name you may run into issues with Resource naming length restrictions.
 
