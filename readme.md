@@ -2,7 +2,7 @@
 
 This solution is used to periodically generate and send an email that contains newly annouced Azure Service retirements. 
 
-If you want more background to this solution you can [read the blog](https://blog.siliconvalve.com/2022/11/16/build-your-own-azure-retirements-email-alerts-service-using-java-azure-functions-and-communication-services/) that that. 
+If you want more background to this solution you can [read the blog](https://blog.siliconvalve.com/2022/11/16/build-your-own-azure-retirements-email-alerts-service-using-java-azure-functions-and-communication-services/). 
 
 The Azure Function is written using Java 11.
 
