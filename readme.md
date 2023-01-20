@@ -48,6 +48,14 @@ On Ubuntu you can install all the necessaru Java bits by running this update:
 sudo apt install openjdk-11-source
 ```
 
+If you want to manually invoke the Timer trigger Function (ParseFeedAndSendAlerts) you can do this locally by using `curl` or a Visual Studio Code extension such as [Thunderclient](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client).
+
+Invoke this URL: http://localhost:7071/admin/functions/ParseFeedAndSendAlerts and send a POST request with a Content-Type of `application/json` and abody of: 
+
+```json
+{ "input": "test" }
+```
+
 ## Setup in Azure
 
 Start by forking this repository on GitHub. Once forked, clone the repository to your local developer machine, or open in a GitHub Codespace.
